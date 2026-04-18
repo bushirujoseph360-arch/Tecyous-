@@ -1,0 +1,62 @@
+{
+  "name": "FIFA World Cup 2026™ United",
+  "short_name": "United 2026",
+  "id": "/?source=pwa",
+  "description": "Suivez le Mondial 2026 en temps réel : scores en direct, calendrier complet, groupes et classements officiels.",
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#050505",
+  "theme_color": "#a3e635",
+  "categories": ["sports", "entertainment"],
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/worldcup-icon-192/192/192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://picsum.photos/seed/worldcup-icon-512/512/512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://picsum.photos/seed/wc26-shot1/1080/1920",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Direct et Calendrier"
+    },
+    {
+      "src": "https://picsum.photos/seed/wc26-shot2/1920/1080",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tableau des Groupes"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calendrier",
+      "short_name": "Calendrier",
+      "description": "Voir le programme des matchs",
+      "url": "/#calendar",
+      "icons": [{ "src": "https://picsum.photos/seed/wc-cal/192/192", "sizes": "192x192" }]
+    },
+    {
+      "name": "Classements",
+      "short_name": "Classement",
+      "description": "Voir les tableaux des groupes",
+      "url": "/#standings",
+      "icons": [{ "src": "https://picsum.photos/seed/wc-standings/192/192", "sizes": "192x192" }]
+    }
+  ]
+}

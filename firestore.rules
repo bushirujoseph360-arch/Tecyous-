@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string
+    //   - photoURL: string
+    //   - role: string ('admin' | 'user')
+    //
+    // Collection: matches
+    // Document ID: {matchId}
+    // Fields:
+    //   - id: string
+    //   - homeTeamId: string
+    //   - awayTeamId: string
+    //   - homeTeamName: string
+    //   - awayTeamName: string
+    //   - date: string (ISO)
+    //   - venue: string
+    //   - stage: string
+    //   - group: string (optional)
+    //   - homeScore: number (optional)
+    //   - awayScore: number (optional)
+    //   - status: string ('Scheduled' | 'Live' | 'Finished')
+    //
+    // Collection: teams
+    // Document ID: {teamId}
+    // Fields:
+    //   - id: string
+    //   - name: string
+    //   - flag: string
+    //   - group: string
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "bushirujoseph360@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['admin', 'user'];
+    }
+
+    function isValidMatch(data) {
+      return data.keys().hasAll(['id', 'homeTeamId', 'awayTeamId', 'date', 'venue', 'stage', 'status']) &&
+             data.id is string &&
+             data.homeTeamId is string &&
+             data.awayTeamId is string &&
+             data.date is string &&
+             data.venue is string &&
+             data.stage in ['Group', 'Round of 32', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Third place', 'Final'] &&
+             data.status in ['Scheduled', 'Live', 'Finished'];
+    }
+
+    function isValidTeam(data) {
+      return data.keys().hasAll(['id', 'name', 'flag', 'group']) &&
+             data.id is string &&
+             data.name is string &&
+             data.flag is string &&
+             data.group is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (isOwner(userId) && request.resource.data.role == 'user' || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+    }
+
+    match /matches/{matchId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidMatch(request.resource.data);
+    }
+
+    match /teams/{teamId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidTeam(request.resource.data);
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

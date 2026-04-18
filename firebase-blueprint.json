@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "Team": {
+      "title": "Team",
+      "description": "A national team participating in the World Cup",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "flag": { "type": "string" },
+        "group": { "type": "string" }
+      },
+      "required": ["id", "name", "flag", "group"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "A scheduled match in the tournament",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "homeTeamId": { "type": "string" },
+        "awayTeamId": { "type": "string" },
+        "homeTeamName": { "type": "string" },
+        "awayTeamName": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "venue": { "type": "string" },
+        "stage": { "type": "string", "enum": ["Group", "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Third place", "Final"] },
+        "group": { "type": "string" },
+        "homeScore": { "type": "number" },
+        "awayScore": { "type": "number" },
+        "status": { "type": "string", "enum": ["Scheduled", "Live", "Finished"] }
+      },
+      "required": ["id", "homeTeamId", "awayTeamId", "date", "venue", "stage", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/teams/{teamId}": {
+      "schema": "Team",
+      "description": "Collection of participating teams"
+    },
+    "/matches/{matchId}": {
+      "schema": "Match",
+      "description": "Collection of matches"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    }
+  }
+}
