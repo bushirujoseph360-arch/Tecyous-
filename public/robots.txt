@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://fifa-world-cup-2026-united.app/sitemap.xml

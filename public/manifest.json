@@ -1,18 +1,18 @@
 {
   "name": "FIFA World Cup 2026™ United",
   "short_name": "United 2026",
-  "id": "/?source=pwa",
+  "id": "index.html?source=pwa",
   "description": "Suivez le Mondial 2026 en temps réel : scores en direct, calendrier complet, groupes et classements officiels.",
   "lang": "fr-FR",
   "dir": "ltr",
-  "start_url": "/?source=pwa",
-  "scope": "/",
+  "start_url": "index.html?source=pwa",
+  "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "display_override": ["window-controls-overlay", "minimal-ui", "standalone"],
   "orientation": "portrait",
   "background_color": "#050505",
   "theme_color": "#a3e635",
-  "categories": ["sports", "entertainment"],
+  "categories": ["sports", "entertainment", "news"],
   "icons": [
     {
       "src": "https://picsum.photos/seed/worldcup-icon-192/192/192",
@@ -22,6 +22,12 @@
     },
     {
       "src": "https://picsum.photos/seed/worldcup-icon-512/512/512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://picsum.photos/seed/worldcup-mask-512/512/512",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -45,18 +51,32 @@
   ],
   "shortcuts": [
     {
-      "name": "Calendrier",
+      "name": "Calendrier des Matchs",
       "short_name": "Calendrier",
-      "description": "Voir le programme des matchs",
-      "url": "/#calendar",
+      "description": "Consulter le programme complet du Mondial",
+      "url": "index.html#calendar",
       "icons": [{ "src": "https://picsum.photos/seed/wc-cal/192/192", "sizes": "192x192" }]
     },
     {
-      "name": "Classements",
-      "short_name": "Classement",
-      "description": "Voir les tableaux des groupes",
-      "url": "/#standings",
+      "name": "Tableaux des Groupes",
+      "short_name": "Classements",
+      "description": "Voir les classements en temps réel",
+      "url": "index.html#standings",
       "icons": [{ "src": "https://picsum.photos/seed/wc-standings/192/192", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
+  "share_target": {
+    "action": "index.html",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

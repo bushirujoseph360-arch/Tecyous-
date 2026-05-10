@@ -1,5 +1,5 @@
 {
-  "name": "FIFA World Cup 2026™ United",
-  "description": "Calendrier officiel et gestionnaire de matchs pour la Coupe du Monde 2026. Suivez les scores, les horaires et les programmes en temps réel.",
-  "requestFramePermissions": []
+  "name": "Compagnon CDM 2026",
+  "description": "Application compagnon complète pour la Coupe du Monde 2026 : calendrier dynamique, gestion du nouveau format à 48 équipes, bracket interactif et guide des 16 villes hôtes en Amérique du Nord.",
+  "requestFramePermissions": ["geolocation", "notifications"]
 }

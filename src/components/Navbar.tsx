@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onTabChange, activeTab, onInstal
   const handleShare = async () => {
     const shareData = {
       title: 'FIFA World Cup 2026™ United',
-      text: 'Découvrez le calendrier officiel et les groupes de la Coupe du Monde 2026 !',
+      text: '⚽ Suivez le Mondial 2026 en direct : calendrier complet, groupes et scores en temps réel. Fonctionne même hors-ligne !',
       url: window.location.origin,
     };
 
@@ -74,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onTabChange, activeTab, onInstal
         toast.success("Lien copié dans le presse-papier !");
       }
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
+      if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
         console.error("Error sharing", error);
         toast.error("Erreur lors du partage");
       }
@@ -83,76 +83,68 @@ export const Navbar: React.FC<NavbarProps> = ({ onTabChange, activeTab, onInstal
 
   const navItems = [
     { id: 'calendar', label: 'Calendrier', icon: Calendar },
-    { id: 'groups', label: 'Groupes', icon: Users },
+    { id: 'bracket', label: 'Bracket', icon: Trophy },
     { id: 'standings', label: 'Classement', icon: BarChart3 },
-    { id: 'download', label: 'Installer', icon: Download },
+    { id: 'cities', label: 'Villes Hôtes', icon: User },
     ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: Settings }] : []),
   ];
 
   return (
-    <nav className="border-b border-white/5 glass sticky top-0 z-50 shadow-2xl">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20 relative">
+    <nav className="border-b border-white/[0.08] glass sticky top-0 z-50 shadow-2xl backdrop-blur-3xl">
+      <div className="container mx-auto px-6 h-24 flex items-center justify-between">
+        <div className="flex items-center gap-12">
+          <div className="flex items-center gap-4 group cursor-pointer">
+            <div className="bg-primary p-2.5 rounded-2xl shadow-2xl shadow-primary/30 relative transform group-hover:rotate-6 group-hover:scale-110 transition-all duration-500">
               <Trophy className="h-6 w-6 text-black" />
               {isLive && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-black animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-600 rounded-full border-2 border-black animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.6)]" />
               )}
             </div>
             <div className="flex flex-col leading-none">
-              <span className="font-black text-xl tracking-tighter uppercase italic">United 2026</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">FIFA World Cup™ United</span>
-                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-white/5 bg-white/5 transition-colors ${isOnline ? 'text-green-500/50' : 'text-amber-500 bg-amber-500/10'}`}>
-                  {isOnline ? <Wifi className="h-2 w-2" /> : <WifiOff className="h-2 w-2" />}
-                  <span className="text-[6px] font-black uppercase tracking-tighter">
-                    {isOnline ? 'Online' : 'Offline Mode'}
+              <span className="font-black text-2xl tracking-tighter uppercase italic group-hover:text-primary transition-colors duration-500">United 2026</span>
+              <div className="flex items-center gap-2.5 mt-1">
+                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-500">FIFA World Cup™</span>
+                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-white/5 bg-white/5 transition-all duration-500 ${isOnline ? 'text-green-500/50' : 'text-amber-500 bg-amber-500/10'}`}>
+                  {isOnline ? <Wifi className="h-2.5 w-2.5" /> : <WifiOff className="h-2.5 w-2.5" />}
+                  <span className="text-[7px] font-black uppercase tracking-tight">
+                    {isOnline ? 'Global Ready' : 'Offline Access'}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-2">
             {navItems.map((item) => (
               <Button
                 key={item.id}
                 variant="ghost"
                 size="sm"
                 onClick={() => onTabChange?.(item.id)}
-                className={`text-[10px] font-black uppercase tracking-widest px-4 ${
-                  activeTab === item.id ? 'text-primary bg-white/5' : 'text-zinc-400'
+                className={`text-[10px] font-black uppercase tracking-[0.2em] px-5 h-12 rounded-xl transition-all duration-300 relative group/nav ${
+                  activeTab === item.id ? 'text-primary bg-white/5' : 'text-zinc-500 hover:text-white'
                 }`}
               >
-                <item.icon className="mr-2 h-3 w-3" />
+                <item.icon className={`mr-2.5 h-3.5 w-3.5 transition-transform group-hover/nav:scale-110 ${activeTab === item.id ? 'text-primary' : ''}`} />
                 {item.label}
+                {item.id === 'calendar' && isLive && (
+                  <span className="absolute -top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse border border-black shadow-lg" />
+                )}
               </Button>
             ))}
-            {canInstall && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onInstall}
-                className="text-[10px] font-black uppercase tracking-widest px-4 text-primary hover:bg-primary/10"
-              >
-                <Download className="mr-2 h-3 w-3" />
-                Installer
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShare}
-              className="text-[10px] font-black uppercase tracking-widest px-4 text-zinc-400 hover:text-white"
-            >
-              <Share2 className="mr-2 h-3 w-3" />
-              Partager
-            </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            className="hidden md:flex text-[10px] font-black uppercase tracking-[0.2em] px-5 h-12 rounded-xl text-zinc-500 hover:text-primary transition-all group"
+          >
+            <Share2 className="mr-2.5 h-3.5 w-3.5 group-hover:rotate-12 transition-transform" />
+            Partager
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger className="md:hidden h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
               <Menu className="h-5 w-5" />
@@ -163,12 +155,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onTabChange, activeTab, onInstal
                 <DropdownMenuItem
                   key={item.id}
                   onClick={() => onTabChange?.(item.id)}
-                  className={`flex items-center gap-3 py-3 px-4 cursor-pointer ${
+                  className={`flex items-center gap-3 py-3 px-4 cursor-pointer relative ${
                     activeTab === item.id ? 'text-primary bg-white/5' : ''
                   }`}
                 >
                   <item.icon className="h-4 w-4" />
                   <span className="font-bold text-sm">{item.label}</span>
+                  {item.id === 'calendar' && isLive && (
+                    <span className="ml-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  )}
                 </DropdownMenuItem>
               ))}
               {canInstall && (

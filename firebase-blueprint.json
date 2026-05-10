@@ -12,7 +12,7 @@
       },
       "required": ["id", "name", "flag", "group"]
     },
-    "Match": {
+     "Match": {
       "title": "Match",
       "description": "A scheduled match in the tournament",
       "type": "object",
@@ -28,7 +28,10 @@
         "group": { "type": "string" },
         "homeScore": { "type": "number" },
         "awayScore": { "type": "number" },
-        "status": { "type": "string", "enum": ["Scheduled", "Live", "Finished"] }
+        "status": { "type": "string", "enum": ["Scheduled", "Live", "Finished"] },
+        "events": { "type": "array" },
+        "stats": { "type": "object" },
+        "lineups": { "type": "object" }
       },
       "required": ["id", "homeTeamId", "awayTeamId", "date", "venue", "stage", "status"]
     },

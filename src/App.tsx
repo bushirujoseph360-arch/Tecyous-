@@ -5,17 +5,17 @@ import { FirebaseProvider, useAuth } from './components/FirebaseProvider';
 import { Navbar } from './components/Navbar';
 import { MatchCard } from './components/MatchCard';
 import { AdminPanel } from './components/AdminPanel';
-import { GroupsList } from './components/GroupsList';
+import { Bracket } from './components/Bracket';
+import { HostCities } from './components/HostCities';
 import { Standings } from './components/Standings';
 import { Countdown } from './components/Countdown';
 import { SkeletonMatch, SkeletonGroup } from './components/Skeletons';
-import { InstallBanner } from './components/InstallBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Toaster, toast } from 'sonner';
-import { Trophy, Calendar as CalendarIcon, Settings, Database, Users, Search, Filter, BarChart3, Download, Info, Share2, Smartphone } from 'lucide-react';
+import { Trophy, Calendar as CalendarIcon, Settings, Database, Users, Search, Filter, BarChart3, Download, Info, Share2, Smartphone, Star, MapPin, Globe } from 'lucide-react';
 import { STAGES } from './constants';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -27,6 +27,8 @@ const AppContent: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStage, setFilterStage] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('calendar');
+  const [userTimezone, setUserTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [favorites, setFavorites] = useState<string[]>(() => {
     const saved = localStorage.getItem('favorites');
@@ -48,6 +50,21 @@ const AppContent: React.FC = () => {
   };
 
   useEffect(() => {
+    // Handle PWA share target and start_url params
+    const urlParams = new URLSearchParams(window.location.search);
+    const source = urlParams.get('source');
+    const shareTitle = urlParams.get('title');
+    const shareText = urlParams.get('text');
+    const shareUrl = urlParams.get('url');
+
+    if (source === 'pwa') {
+      console.log('App launched from PWA');
+    }
+
+    if (shareTitle || shareText || shareUrl) {
+      toast.info(`Contenu partagé reçu : ${shareTitle || shareText || ''}`);
+    }
+
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -60,6 +77,10 @@ const AppContent: React.FC = () => {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
+
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -104,7 +125,7 @@ const AppContent: React.FC = () => {
       match.awayTeamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       match.venue.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStage = filterStage === 'all' || match.stage === filterStage;
+    const matchesStage = filterStage === 'all' ? true : filterStage === 'live' ? match.status === 'Live' : match.stage === filterStage;
     const matchesFavorite = !showOnlyFavorites || favorites.includes(match.id);
     
     return matchesSearch && matchesStage && matchesFavorite;
@@ -200,8 +221,6 @@ const AppContent: React.FC = () => {
         canInstall={!!deferredPrompt}
         isLive={hasLiveMatches}
       />
-
-      <InstallBanner onInstall={handleInstallApp} canInstall={!!deferredPrompt} />
       
       {hasLiveMatches && (
         <div className="bg-red-600/10 border-y border-red-500/20 py-2 overflow-hidden whitespace-nowrap relative">
@@ -236,81 +255,144 @@ const AppContent: React.FC = () => {
       )}
 
       <main className="container mx-auto px-4 py-12 max-w-6xl">
-        <header className="mb-24 text-center space-y-10 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full -z-10 animate-pulse" />
+        <header className="mb-24 text-center space-y-8 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[160px] rounded-full -z-10 animate-pulse-subtle" />
           
-          <div className="space-y-6">
+          <div className="flex flex-col items-center">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center justify-center px-6 py-2 glass rounded-full mb-4 shadow-2xl ring-1 ring-white/10"
+              className="inline-flex items-center gap-3 px-5 py-1.5 glass rounded-full mb-8 shadow-2xl ring-1 ring-white/10"
             >
-              <Trophy className="h-4 w-4 text-primary mr-3 animate-bounce" />
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">FIFA World Cup 2026™ United</span>
+              <Trophy className="h-3.5 w-3.5 text-primary animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-primary/80">FIFA World Cup 2026™</span>
             </motion.div>
             
-            <motion.h1 
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.8, ease: "easeOut" }}
-              className="text-6xl md:text-9xl font-black tracking-tighter uppercase italic leading-[0.85]"
+              transition={{ delay: 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="relative"
             >
-              United <br />
-              <span className="text-primary drop-shadow-[0_0_30px_rgba(163,230,53,0.3)]">2026</span>
-            </motion.h1>
+              <h1 className="text-7xl md:text-[12rem] font-black tracking-tighter uppercase italic leading-[0.75] mb-2">
+                United <br />
+                <span className="text-primary italic text-glow-primary">2026</span>
+              </h1>
+              <div className="absolute -right-4 -bottom-4 md:-right-12 md:-bottom-8 hidden md:block">
+                <span className="text-[10px] font-black uppercase tracking-[1em] text-white/20 rotate-90 origin-left block">Tournament</span>
+              </div>
+            </motion.div>
             
             <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-zinc-400 text-xl max-w-2xl mx-auto font-medium leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 1 }}
+              className="text-zinc-500 text-lg md:text-2xl mt-12 max-w-3xl mx-auto font-light leading-relaxed tracking-tight"
             >
-              Le calendrier officiel et les groupes de la plus grande Coupe du Monde de l'histoire.
+              Experience the largest World Cup in history across <span className="text-white font-medium">16 Host Cities</span> and <span className="text-white font-medium">48 Nations</span>.
             </motion.p>
           </div>
 
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-            className="pt-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="pt-12"
           >
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 mb-8 opacity-60">Coup d'envoi dans</p>
-            <Countdown />
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <span className="text-[9px] font-black uppercase tracking-[0.6em] text-primary animate-pulse">Official Countdown</span>
+              <Countdown />
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-4 mt-16">
+              <Button 
+                onClick={async () => {
+                  try {
+                    if (navigator.share) {
+                      await navigator.share({
+                        title: 'FIFA World Cup 2026™ United',
+                        text: '⚽ Follow the 2026 World Cup live: full schedule, groups, and real-time scores!',
+                        url: window.location.origin
+                      });
+                    } else {
+                      await navigator.clipboard.writeText(window.location.origin);
+                      toast.success("Link copied!");
+                    }
+                  } catch (error: any) {
+                    if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
+                      console.error("Error sharing", error);
+                      toast.error("Sharing failed");
+                    }
+                  }
+                }}
+                className="h-14 rounded-2xl px-12 bg-white text-black font-black uppercase tracking-widest shadow-2xl hover:bg-primary transition-all duration-300 hover:scale-105 group"
+              >
+                <Share2 className="h-4 w-4 mr-3 group-hover:rotate-12 transition-transform" /> Share Experience
+              </Button>
+            </div>
           </motion.div>
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-12">
           <TabsContent value="calendar" className="space-y-8">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass p-4 rounded-2xl">
-              <div className="relative w-full md:max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <Input 
-                  placeholder="Rechercher une équipe ou un stade..." 
-                  className="pl-10 bg-black/20 border-white/5 focus:border-primary/50 transition-all"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass p-6 rounded-3xl border border-white/5">
+              <div className="flex flex-col gap-4 w-full md:max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Input 
+                    placeholder="Equipe, ville ou stade..." 
+                    className="pl-12 h-14 rounded-2xl bg-black/40 border-white/5 focus:border-primary/50 transition-all text-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-zinc-500 ml-2" />
+                  <Select value={userTimezone} onValueChange={setUserTimezone}>
+                    <SelectTrigger className="h-10 bg-black/20 border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                      <SelectValue placeholder="Timezone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UTC">UTC (FIFA Standard)</SelectItem>
+                      <SelectItem value="America/New_York">Eastern Time (NY/NJ)</SelectItem>
+                      <SelectItem value="America/Chicago">Central Time (Mexico City/Dallas)</SelectItem>
+                      <SelectItem value="America/Los_Angeles">Pacific Time (LA/Vancouver)</SelectItem>
+                      <SelectItem value="local">Ma Position ({Intl.DateTimeFormat().resolvedOptions().timeZone})</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="flex items-center gap-2 w-full md:w-auto">
+
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                {hasLiveMatches && (
+                  <Button 
+                    variant={filterStage === 'live' ? "destructive" : "outline"}
+                    onClick={() => setFilterStage(filterStage === 'live' ? 'all' : 'live')}
+                    className={`h-14 rounded-2xl px-6 font-black uppercase tracking-widest transition-all ${filterStage === 'live' ? 'bg-red-500 text-white animate-pulse' : 'bg-black/20 border-white/5 text-red-500 hover:text-red-400'}`}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-current mr-2 animate-pulse" />
+                    Direct
+                  </Button>
+                )}
                 <Button 
                   variant={showOnlyFavorites ? "default" : "outline"}
                   onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
                   className={`h-14 rounded-2xl px-6 font-black uppercase tracking-widest transition-all ${showOnlyFavorites ? 'bg-primary text-black' : 'bg-black/20 border-white/5 text-zinc-400 hover:text-white'}`}
                 >
-                  <Trophy className={`mr-2 h-4 w-4 ${showOnlyFavorites ? 'fill-black' : ''}`} />
-                  Favoris
+                  <Star className={`mr-2 h-4 w-4 ${showOnlyFavorites ? 'fill-black' : ''}`} />
+                  Suivis
                 </Button>
-                <Filter className="h-4 w-4 text-zinc-500 ml-2" />
+                <div className="w-px h-10 bg-white/5 mx-2" />
                 <Select value={filterStage} onValueChange={setFilterStage}>
-                  <SelectTrigger className="w-full md:w-[200px] bg-black/20 border-white/5">
-                    <SelectValue placeholder="Toutes les phases" />
+                  <SelectTrigger className="w-full md:w-[220px] h-14 rounded-2xl bg-black/20 border-white/5 font-black uppercase tracking-widest text-[10px]">
+                    <SelectValue placeholder="Phase" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes les phases</SelectItem>
-                    {STAGES.map(stage => (
-                      <SelectItem key={stage} value={stage}>{stage}</SelectItem>
-                    ))}
+                    <SelectItem value="all">Tout le tournoi</SelectItem>
+                    <SelectItem value="Group">Phase de Groupes</SelectItem>
+                    <SelectItem value="Round of 32">Seizièmes de finale</SelectItem>
+                    <SelectItem value="Round of 16">Huitièmes de finale</SelectItem>
+                    <SelectItem value="Final">Finale</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -326,10 +408,10 @@ const AppContent: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-center py-20 bg-muted/30 rounded-3xl border-2 border-dashed"
+                  className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-white/5"
                 >
                   <CalendarIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-                  <p className="text-muted-foreground">Aucun match ne correspond à votre recherche.</p>
+                  <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Aucun match trouvé</p>
                 </motion.div>
               ) : (
                 <motion.div 
@@ -348,6 +430,7 @@ const AppContent: React.FC = () => {
                         match={match} 
                         isFavorite={favorites.includes(match.id)}
                         onToggleFavorite={() => toggleFavorite(match.id)}
+                        timezone={userTimezone === 'local' ? undefined : userTimezone}
                       />
                     </motion.div>
                   ))}
@@ -356,15 +439,15 @@ const AppContent: React.FC = () => {
             </AnimatePresence>
           </TabsContent>
 
-          <TabsContent value="groups">
+          <TabsContent value="bracket">
             <AnimatePresence mode="wait">
-              {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {[1, 2, 3, 4, 5, 6].map(i => <SkeletonGroup key={i} />)}
-                </div>
-              ) : (
-                <GroupsList teams={teams} isAdmin={isAdmin} onSeedTeams={seedTeams} />
-              )}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+              >
+                <Bracket />
+              </motion.div>
             </AnimatePresence>
           </TabsContent>
 
@@ -373,149 +456,25 @@ const AppContent: React.FC = () => {
               {loading ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                   {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="glass-dark rounded-[2rem] h-[300px] animate-pulse bg-white/5" />
+                    <div key={i} className="glass-dark rounded-[3rem] h-[400px] animate-pulse bg-white/5" />
                   ))}
                 </div>
-              ) : teams.length === 0 ? (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-20 bg-muted/30 rounded-3xl border-2 border-dashed"
-                >
-                  <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-                  <p className="text-muted-foreground">Les classements seront disponibles une fois les équipes initialisées.</p>
-                </motion.div>
               ) : (
                 <Standings teams={teams} matches={matches} />
               )}
             </AnimatePresence>
           </TabsContent>
 
-          <TabsContent value="download">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="max-w-4xl mx-auto"
-            >
-              <div className="glass-dark rounded-[3rem] p-12 border border-white/5 shadow-2xl overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                  <div className="space-y-8">
-                    <div className="space-y-4">
-                      <div className="bg-primary/20 text-primary px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest w-fit">
-                        Expérience Mobile
-                      </div>
-                      <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">
-                        FIFA World Cup <br />
-                        <span className="text-primary italic">2026™ United</span>
-                      </h2>
-                      <p className="text-zinc-400 text-sm leading-relaxed">
-                        Installez l'application sur votre téléphone pour un accès ultra-rapide, des notifications en temps réel et une expérience plein écran.
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      {[
-                        { title: 'Accès Instantané', desc: 'Lancez l\'app depuis votre écran d\'accueil.' },
-                        { title: 'Mode Plein Écran', desc: 'Profitez d\'une interface immersive sans barres de navigation.' },
-                        { title: 'Performance', desc: 'Chargement plus rapide et navigation plus fluide.' }
-                      ].map((feat, i) => (
-                        <div key={i} className="flex gap-4 items-start">
-                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0 mt-1">
-                            <Trophy className="h-3 w-3" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-black uppercase tracking-widest text-white">{feat.title}</h4>
-                            <p className="text-[11px] text-zinc-500">{feat.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-6">
-                      <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-6">
-                        <div className="flex items-center gap-3 text-primary">
-                          <Smartphone className="h-5 w-5" />
-                          <span className="text-xs font-black uppercase tracking-widest">Version Android (APK)</span>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <p className="text-[11px] text-zinc-400 leading-relaxed">
-                            Vous souhaitez une véritable application Android (.apk) ? Utilisez l'outil gratuit <span className="text-white font-bold">PWABuilder</span> pour convertir cette plateforme en application native en 2 minutes.
-                          </p>
-                          
-                          <div className="flex flex-col gap-3">
-                            <Button 
-                              onClick={() => window.open(`https://www.pwabuilder.com/?url=${encodeURIComponent(window.location.origin)}`, '_blank')}
-                              className="w-full h-12 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest rounded-xl border border-white/10 transition-all"
-                            >
-                              Générer mon APK
-                            </Button>
-                            <p className="text-[9px] text-zinc-600 text-center italic">
-                              Note : Copiez l'URL de cette page avant de cliquer.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {deferredPrompt ? (
-                        <Button 
-                          onClick={handleInstallApp}
-                          className="w-full h-14 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
-                        >
-                          <Download className="mr-3 h-5 w-5" /> Installer l'App (PWA)
-                        </Button>
-                      ) : (
-                        <div className="space-y-6">
-                          <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-                            <div className="flex items-center gap-3 text-primary">
-                              <Info className="h-5 w-5" />
-                              <span className="text-xs font-black uppercase tracking-widest">Installation Rapide</span>
-                            </div>
-                            <div className="space-y-4">
-                              {/iPad|iPhone|iPod/.test(navigator.userAgent) ? (
-                                <div className="space-y-3">
-                                  <p className="text-[11px] text-zinc-400 leading-relaxed">
-                                    Sur <span className="text-white font-bold">iOS (Safari)</span> :
-                                  </p>
-                                  <ol className="text-[11px] text-zinc-500 space-y-2 list-decimal ml-4">
-                                    <li>Appuyez sur le bouton <span className="text-primary font-bold inline-flex items-center gap-1"><Share2 className="h-3 w-3" /> Partager</span>.</li>
-                                    <li>Sélectionnez <span className="text-white font-bold">"Sur l'écran d'accueil"</span>.</li>
-                                  </ol>
-                                </div>
-                              ) : (
-                                <div className="space-y-3">
-                                  <p className="text-[11px] text-zinc-400 leading-relaxed">
-                                    Sur <span className="text-white font-bold">Android</span> :
-                                  </p>
-                                  <ol className="text-[11px] text-zinc-500 space-y-2 list-decimal ml-4">
-                                    <li>Appuyez sur les <span className="text-white font-bold">3 points</span> (Chrome).</li>
-                                    <li>Sélectionnez <span className="text-white font-bold">"Installer l'application"</span>.</li>
-                                  </ol>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full opacity-50" />
-                    <div className="relative glass border border-white/10 rounded-[2.5rem] p-4 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-700">
-                      <img 
-                        src="https://picsum.photos/seed/mobileapp/800/1600" 
-                        alt="App Preview" 
-                        className="rounded-[1.5rem] w-full aspect-[9/19] object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+          <TabsContent value="cities">
+            <AnimatePresence mode="wait">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+              >
+                <HostCities />
+              </motion.div>
+            </AnimatePresence>
           </TabsContent>
 
           {isAdmin && (
@@ -538,15 +497,10 @@ const AppContent: React.FC = () => {
               <Trophy className="h-4 w-4" />
               <span className="text-sm font-bold uppercase tracking-widest">Mondial 2026</span>
             </div>
-            {deferredPrompt && (
-              <button 
-                onClick={handleInstallApp}
-                className="flex items-center gap-2 hover:text-primary transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                <span className="text-sm font-bold uppercase tracking-widest">Installer l'App</span>
-              </button>
-            )}
+            <div className="flex items-center gap-2 border-l border-white/10 pl-6 text-primary">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Hébergé 24h/24 Google Cloud</span>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             © 2026 Application de Calendrier Coupe du Monde. Tous droits réservés.

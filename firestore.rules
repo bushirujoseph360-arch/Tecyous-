@@ -1,87 +1,72 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: users
-    // Document ID: {userId}
-    // Fields:
-    //   - uid: string (required)
-    //   - email: string (required)
-    //   - displayName: string
-    //   - photoURL: string
-    //   - role: string ('admin' | 'user')
-    //
-    // Collection: matches
-    // Document ID: {matchId}
-    // Fields:
-    //   - id: string
-    //   - homeTeamId: string
-    //   - awayTeamId: string
-    //   - homeTeamName: string
-    //   - awayTeamName: string
-    //   - date: string (ISO)
-    //   - venue: string
-    //   - stage: string
-    //   - group: string (optional)
-    //   - homeScore: number (optional)
-    //   - awayScore: number (optional)
-    //   - status: string ('Scheduled' | 'Live' | 'Finished')
-    //
-    // Collection: teams
-    // Document ID: {teamId}
-    // Fields:
-    //   - id: string
-    //   - name: string
-    //   - flag: string
-    //   - group: string
-    //
-    // ===============================================================
+    // Default Deny All
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
     // ===============================================================
     // Helper Functions
     // ===============================================================
     
-    function isAuthenticated() {
+    function isSignedIn() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
     function isAdmin() {
-      return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+      return isSignedIn() &&
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
          (request.auth.token.email == "bushirujoseph360@gmail.com" && request.auth.token.email_verified == true));
     }
 
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // ===============================================================
+    // Validation Blueprints
+    // ===================================
+
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'email', 'role']) &&
-             data.uid is string &&
-             data.email is string &&
+             data.uid is string && data.uid.size() <= 128 &&
+             data.email is string && data.email.size() <= 200 &&
              data.role in ['admin', 'user'];
     }
 
     function isValidMatch(data) {
       return data.keys().hasAll(['id', 'homeTeamId', 'awayTeamId', 'date', 'venue', 'stage', 'status']) &&
-             data.id is string &&
-             data.homeTeamId is string &&
-             data.awayTeamId is string &&
-             data.date is string &&
-             data.venue is string &&
-             data.stage in ['Group', 'Round of 32', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Third place', 'Final'] &&
-             data.status in ['Scheduled', 'Live', 'Finished'];
+             data.id is string && data.id.size() <= 128 &&
+             data.homeTeamId is string && data.homeTeamId.size() <= 128 &&
+             data.awayTeamId is string && data.awayTeamId.size() <= 128 &&
+             data.date is string && data.date.size() <= 100 &&
+             data.venue is string && data.venue.size() <= 200 &&
+             data.stage is string && data.status is string &&
+             (!data.keys().contains('events') || data.events is list) &&
+             (!data.keys().contains('stats') || data.stats is map) &&
+             (!data.keys().contains('lineups') || data.lineups is map);
     }
 
     function isValidTeam(data) {
       return data.keys().hasAll(['id', 'name', 'flag', 'group']) &&
-             data.id is string &&
-             data.name is string &&
-             data.flag is string &&
-             data.group is string;
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.flag is string && data.flag.size() <= 500 &&
+             data.group is string && data.group.size() <= 10;
     }
 
     // ===============================================================
@@ -90,20 +75,20 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
-                    (isOwner(userId) && request.resource.data.role == 'user' || isAdmin());
-      allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
-                    ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+      allow create: if isSignedIn() && isValidUser(incoming()) && 
+                    ((isOwner(userId) && incoming().role == 'user') || isAdmin());
+      allow update: if isSignedIn() && isValidUser(incoming()) && 
+                    ((isOwner(userId) && incoming().role == existing().role) || isAdmin());
     }
 
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidMatch(request.resource.data);
+      allow write: if isAdmin() && isValidMatch(incoming()) && isValidId(matchId);
     }
 
     match /teams/{teamId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidTeam(request.resource.data);
+      allow write: if isAdmin() && isValidTeam(incoming()) && isValidId(teamId);
     }
 
     match /test/connection {
