@@ -16,6 +16,8 @@
 
   --animate-marquee: marquee 40s linear infinite;
   --animate-pulse-subtle: pulse-subtle 3s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-reveal: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   @keyframes marquee {
     from { transform: translateX(0); }
@@ -26,6 +28,16 @@
     0%, 100% { opacity: 0.8; }
     50% { opacity: 1; }
   }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes reveal {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
 }
 
 body {
@@ -35,6 +47,24 @@ body {
   position: relative;
   overflow-x: hidden;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  scroll-behavior: smooth;
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+}
+
+.reveal-on-scroll.visible {
+  animation: var(--animate-reveal);
+}
+
+.hover-glow {
+  @apply transition-all duration-300;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 30px rgba(163, 230, 53, 0.2);
+  transform: translateY(-2px);
 }
 
 /* Professional Sports Grid Background */

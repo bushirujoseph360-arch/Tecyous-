@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { auth, googleProvider, signInWithPopup, signOut } from '../firebase';
 import { useAuth } from './FirebaseProvider';
 import { Button } from './ui/button';
@@ -121,15 +122,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onTabChange, activeTab, onInstal
                 variant="ghost"
                 size="sm"
                 onClick={() => onTabChange?.(item.id)}
-                className={`text-[10px] font-black uppercase tracking-[0.2em] px-5 h-12 rounded-xl transition-all duration-300 relative group/nav ${
-                  activeTab === item.id ? 'text-primary bg-white/5' : 'text-zinc-500 hover:text-white'
+                className={`text-[10px] font-black uppercase tracking-[0.2em] px-5 h-12 rounded-xl transition-all duration-500 relative group/nav ${
+                  activeTab === item.id ? 'text-primary' : 'text-zinc-500 hover:text-white'
                 }`}
               >
-                <item.icon className={`mr-2.5 h-3.5 w-3.5 transition-transform group-hover/nav:scale-110 ${activeTab === item.id ? 'text-primary' : ''}`} />
-                {item.label}
-                {item.id === 'calendar' && isLive && (
-                  <span className="absolute -top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse border border-black shadow-lg" />
+                {activeTab === item.id && (
+                  <motion.div
+                    layoutId="navPill"
+                    className="absolute inset-0 bg-white/5 rounded-xl border border-white/10 z-0"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
                 )}
+                <span className="relative z-10 flex items-center">
+                  <item.icon className={`mr-2.5 h-3.5 w-3.5 transition-transform group-hover/nav:scale-110 ${activeTab === item.id ? 'text-primary' : ''}`} />
+                  {item.label}
+                  {item.id === 'calendar' && isLive && (
+                    <span className="absolute -top-1 -right-3 w-2 h-2 bg-red-500 rounded-full animate-pulse border border-black shadow-lg" />
+                  )}
+                </span>
               </Button>
             ))}
           </div>

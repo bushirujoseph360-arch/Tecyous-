@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export const Countdown: React.FC = () => {
   const targetDate = new Date('2026-06-11T20:00:00Z').getTime();
@@ -47,10 +47,19 @@ export const Countdown: React.FC = () => {
         >
           <div className="relative">
             <div className="absolute -inset-1 bg-primary/20 rounded-3xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative glass-dark w-16 h-16 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-2xl md:text-4xl font-black text-primary shadow-2xl border border-white/10 group-hover:border-primary/40 transition-all duration-500">
-              <span className="drop-shadow-[0_0_10px_rgba(163,230,53,0.4)]">
-                {item.value.toString().padStart(2, '0')}
-              </span>
+            <div className="relative glass-dark w-16 h-16 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-2xl md:text-4xl font-black text-primary shadow-2xl border border-white/10 group-hover:border-primary/40 transition-all duration-500 overflow-hidden">
+              <AnimatePresence mode="popLayout">
+                <motion.span 
+                  key={item.value}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="drop-shadow-[0_0_10px_rgba(163,230,53,0.4)] absolute"
+                >
+                  {item.value.toString().padStart(2, '0')}
+                </motion.span>
+              </AnimatePresence>
             </div>
           </div>
           <span className="text-[9px] md:text-[11px] uppercase font-black tracking-[0.3em] mt-4 text-zinc-500 group-hover:text-zinc-300 transition-colors">

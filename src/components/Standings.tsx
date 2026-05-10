@@ -94,9 +94,10 @@ export const Standings: React.FC<StandingsProps> = ({ teams, matches }) => {
           return (
             <motion.div
               key={group}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.6 }}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: index * 0.05, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="group"
             >
               <Card className="border-none glass-dark overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 group-hover:translate-y-[-4px] group-hover:bg-white/[0.03]">

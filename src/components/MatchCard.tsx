@@ -117,7 +117,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, isFavorite, onToggl
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Card className="overflow-hidden border-none glass-card group relative cursor-pointer rounded-3xl">
+        <Card className="overflow-hidden border-none glass-card group relative cursor-pointer rounded-[2rem] hover-glow transition-all duration-500">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700" />
           
           <CardContent className="p-0 relative z-10">

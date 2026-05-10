@@ -18,11 +18,12 @@ export const HostCities: React.FC = () => {
         {HOST_CITIES.map((city, index) => (
           <motion.div
             key={city.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Card className="overflow-hidden border-none glass-card group cursor-pointer h-full">
+            <Card className="overflow-hidden border-none glass-card group cursor-pointer h-full hover-glow transition-all duration-500 rounded-[2rem]">
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src={city.image} 

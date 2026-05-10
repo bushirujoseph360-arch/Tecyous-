@@ -15,7 +15,7 @@ import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Toaster, toast } from 'sonner';
-import { Trophy, Calendar as CalendarIcon, Settings, Database, Users, Search, Filter, BarChart3, Download, Info, Share2, Smartphone, Star, MapPin, Globe } from 'lucide-react';
+import { Trophy, Calendar as CalendarIcon, Settings, Database, Users, Search, Filter, BarChart3, Download, Info, Share2, Smartphone, Star, MapPin, Globe, ArrowUp } from 'lucide-react';
 import { STAGES } from './constants';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -35,6 +35,19 @@ const AppContent: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     localStorage.setItem('favorites', JSON.stringify(favorites));
@@ -335,7 +348,12 @@ const AppContent: React.FC = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-12">
           <TabsContent value="calendar" className="space-y-8">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass p-6 rounded-3xl border border-white/5">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col md:flex-row gap-4 items-center justify-between glass p-6 rounded-3xl border border-white/5"
+            >
               <div className="flex flex-col gap-4 w-full md:max-w-md">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
@@ -396,7 +414,7 @@ const AppContent: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+            </motion.div>
 
             <AnimatePresence mode="wait">
               {loading ? (
@@ -507,6 +525,19 @@ const AppContent: React.FC = () => {
           </p>
         </div>
       </footer>
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 w-14 h-14 bg-primary text-black rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(163,230,53,0.4)] z-50 hover:scale-110 active:scale-95 transition-transform"
+          >
+            <ArrowUp className="h-6 w-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
       <Toaster position="top-center" />
     </div>
   );
